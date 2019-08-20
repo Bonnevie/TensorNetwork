@@ -139,7 +139,7 @@ def test_backend_network():
                                          backend="numpy")
   assert tn.backend.name == "numpy"
 
-  res = naive(tn).get_final_node().get_tensor()
+  res = naive(tn).get_final_node().tensor
   res_np = a.reshape((2, 4)) @ a.reshape((4, 2)) @ a.reshape((2, 4))
   res_np = res_np.reshape((2, 2, 2))
   np.testing.assert_allclose(res, res_np)

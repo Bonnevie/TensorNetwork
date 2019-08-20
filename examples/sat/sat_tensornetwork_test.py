@@ -27,7 +27,7 @@ class SATTensorNetworkTest(tf.test.TestCase):
     net = sat_tensornetwork.sat_count_tn([
         (1, 2, 3),
     ])
-    count = tensornetwork.contractors.naive(net).get_final_node().get_tensor()
+    count = tensornetwork.contractors.naive(net).get_final_node().tensor
     self.assertEqual(count.numpy(), 7)
 
   def test_dual_clauses(self):
@@ -35,7 +35,7 @@ class SATTensorNetworkTest(tf.test.TestCase):
         (1, 2, 3),
         (1, -2, 3),
     ])
-    count = tensornetwork.contractors.naive(net).get_final_node().get_tensor()
+    count = tensornetwork.contractors.naive(net).get_final_node().tensor
     self.assertEqual(count.numpy(), 6)
 
   def test_dual_clauses(self):
@@ -49,7 +49,7 @@ class SATTensorNetworkTest(tf.test.TestCase):
         (-1, -2, 3),
         (-1, -2, -3),
     ])
-    count = tensornetwork.contractors.naive(net).get_final_node().get_tensor()
+    count = tensornetwork.contractors.naive(net).get_final_node().tensor
     self.assertEqual(count.numpy(), 0)
 
   def test_four_variables(self):
@@ -57,7 +57,7 @@ class SATTensorNetworkTest(tf.test.TestCase):
         (1, 2, 3),
         (1, 2, 4),
     ])
-    count = tensornetwork.contractors.naive(net).get_final_node().get_tensor()
+    count = tensornetwork.contractors.naive(net).get_final_node().tensor
     self.assertEqual(count.numpy(), 13)
 
   def test_four_variables_four_clauses(self):
@@ -67,14 +67,14 @@ class SATTensorNetworkTest(tf.test.TestCase):
         (-3, -4, 2),
         (-1, 3, -2),
     ])
-    count = tensornetwork.contractors.naive(net).get_final_node().get_tensor()
+    count = tensornetwork.contractors.naive(net).get_final_node().tensor
     self.assertEqual(count.numpy(), 9)
 
   def test_single_variable(self):
     net = sat_tensornetwork.sat_count_tn([
         (1, 1, 1),
     ])
-    count = tensornetwork.contractors.naive(net).get_final_node().get_tensor()
+    count = tensornetwork.contractors.naive(net).get_final_node().tensor
     self.assertEqual(count.numpy(), 1)
 
   def test_solutions(self):
@@ -83,7 +83,7 @@ class SATTensorNetworkTest(tf.test.TestCase):
     ])
     network = tensornetwork.contractors.naive(net)
     solutions_node = network.get_final_node().reorder_edges(edge_order)
-    solutions = solutions_node.get_tensor()
+    solutions = solutions_node.tensor
     self.assertEqual(solutions.numpy()[0][0][0], 1)
     # Only unaccepted value.
     self.assertEqual(solutions.numpy()[0][0][1], 0)

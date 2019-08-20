@@ -17,7 +17,7 @@ class GraphmodeTensorNetworkTest(tf.test.TestCase):
       a = net.add_node(tf.ones(10))
       b = net.add_node(tf.ones(10))
       e = net.connect(a[0], b[0])
-      final_tensor = net.contract(e).get_tensor()
+      final_tensor = net.contract(e).tensor
 
       sess = tf.compat.v1.Session()
       final_val = sess.run(final_tensor)
@@ -30,7 +30,7 @@ class GraphmodeTensorNetworkTest(tf.test.TestCase):
       a = net.add_node(tf.Variable(tf.ones(10)))
       b = net.add_node(tf.ones(10))
       e = net.connect(a[0], b[0])
-      final_tensor = net.contract(e).get_tensor()
+      final_tensor = net.contract(e).tensor
       opt = tf.compat.v1.train.GradientDescentOptimizer(0.001)
       train_op = opt.minimize(final_tensor)
       sess = tf.compat.v1.Session()
@@ -48,7 +48,7 @@ class GraphmodeTensorNetworkTest(tf.test.TestCase):
       n1 = net.add_node(x_slice)
       n2 = net.add_node(x_slice)
       e = net.connect(n1[0], n2[0])
-      return net.contract(e).get_tensor()
+      return net.contract(e).tensor
 
     x = np.ones(10)
     self.assertAllClose(f(x, tf.convert_to_tensor(2)), 2.0)
@@ -65,7 +65,7 @@ class GraphmodeTensorNetworkTest(tf.test.TestCase):
       net.connect(n1[0], n2[0])
       net.connect(n1[1], n2[1])
       net.connect(n1[2], n2[2])
-      return net.contract_between(n1, n2).get_tensor()
+      return net.contract_between(n1, n2).tensor
 
     x = tf.ones((3, 4, 5))
     self.assertAllClose(f(x, tf.convert_to_tensor(2)), 24.0)
@@ -82,7 +82,7 @@ class GraphmodeTensorNetworkTest(tf.test.TestCase):
       net.connect(n1[0], n2[0])
       net.connect(n1[1], n2[1])
       net.connect(n1[2], n2[2])
-      return net.contract(net.flatten_edges_between(n1, n2)).get_tensor()
+      return net.contract(net.flatten_edges_between(n1, n2)).tensor
 
     x = np.ones((3, 4, 5))
     self.assertAllClose(f(x, tf.convert_to_tensor(2)), 24.0)
@@ -97,7 +97,7 @@ class GraphmodeTensorNetworkTest(tf.test.TestCase):
       n1 = net.add_node(x_slice)
       net.connect(n1[0], n1[2])
       net.connect(n1[1], n1[3])
-      return net.contract(net.flatten_edges_between(n1, n1)).get_tensor()
+      return net.contract(net.flatten_edges_between(n1, n1)).tensor
 
     x = np.ones((3, 4, 3, 4, 5))
     self.assertAllClose(f(x, tf.convert_to_tensor(2)), np.ones((2,)) * 12)
@@ -110,7 +110,7 @@ class GraphmodeTensorNetworkTest(tf.test.TestCase):
       a = net.add_node(tensors[0])
       b = net.add_node(tensors[1])
       e = net.connect(a[0], b[0])
-      return net.contract(e).get_tensor()
+      return net.contract(e).tensor
 
     tensors = [np.ones((5, 10)), np.ones((5, 10))]
     result = tf.map_fn(build_tensornetwork, tensors, dtype=tf.float64)

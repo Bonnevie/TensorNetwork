@@ -12,7 +12,7 @@ def test_basic_graphmode():
   a = net.add_node(torch.ones(10))
   b = net.add_node(torch.ones(10))
   e = net.connect(a[0], b[0])
-  actual = net.contract(e).get_tensor()
+  actual = net.contract(e).tensor
   assert actual == 10.0
 
 
@@ -21,7 +21,7 @@ def test_gradient_decent():
   a = net.add_node(torch.autograd.Variable(torch.ones(10), requires_grad=True))
   b = net.add_node(torch.ones(10))
   e = net.connect(a[0], b[0])
-  final_tensor = net.contract(e).get_tensor()
+  final_tensor = net.contract(e).tensor
   opt = torch.optim.SGD([a.tensor], lr=0.001)
   opt.zero_grad()
   final_tensor.norm().backward()
@@ -39,7 +39,7 @@ def test_dynamic_network_sizes():
     n1 = net.add_node(x_slice)
     n2 = net.add_node(x_slice)
     e = net.connect(n1[0], n2[0])
-    return net.contract(e).get_tensor()
+    return net.contract(e).tensor
 
   x = torch.ones(10)
   assert f(x, 2) == 2.
@@ -56,7 +56,7 @@ def test_dynamic_network_sizes_contract_between():
     net.connect(n1[0], n2[0])
     net.connect(n1[1], n2[1])
     net.connect(n1[2], n2[2])
-    return net.contract_between(n1, n2).get_tensor()
+    return net.contract_between(n1, n2).tensor
 
   x = torch.ones((3, 4, 5))
   assert f(x, 2) == 24.
@@ -73,7 +73,7 @@ def test_dynamic_network_sizes_flatten_standard():
     net.connect(n1[0], n2[0])
     net.connect(n1[1], n2[1])
     net.connect(n1[2], n2[2])
-    return net.contract(net.flatten_edges_between(n1, n2)).get_tensor()
+    return net.contract(net.flatten_edges_between(n1, n2)).tensor
 
   x = torch.ones((3, 4, 5))
   assert f(x, 2) == 24.
@@ -88,7 +88,7 @@ def test_dynamic_network_sizes_flatten_trace():
     n1 = net.add_node(x_slice)
     net.connect(n1[0], n1[2])
     net.connect(n1[1], n1[3])
-    return net.contract(net.flatten_edges_between(n1, n1)).get_tensor()
+    return net.contract(net.flatten_edges_between(n1, n1)).tensor
 
   x = torch.ones((3, 4, 3, 4, 5))
   np.testing.assert_allclose(f(x, 2), np.ones((2,)) * 12)

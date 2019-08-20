@@ -65,7 +65,7 @@ def test_node_initialize_tensorflow():
 
 def test_node_get_rank(single_node_edge):
   node = single_node_edge.node
-  assert node.get_rank() == 3
+  assert node.rank == 3
 
 
 def test_node_set_signature(single_node_edge):
@@ -119,14 +119,14 @@ def test_node_add_edge(single_node_edge):
 def test_node_get_tensor(single_node_edge):
   node = single_node_edge.node
   tensor = single_node_edge.tensor
-  np.testing.assert_allclose(node.get_tensor(), tensor)
+  np.testing.assert_allclose(node.tensor, tensor)
 
 
 def test_node_set_tensor(single_node_edge):
   node = single_node_edge.node
   tensor2 = np.zeros((2, 4, 3, 2))
   node.set_tensor((tensor2))
-  np.testing.assert_allclose(node.get_tensor(), tensor2)
+  np.testing.assert_allclose(node.tensor, tensor2)
 
 
 def test_node_shape(single_node_edge):

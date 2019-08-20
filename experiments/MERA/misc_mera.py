@@ -32,7 +32,7 @@ def trace(rho):
 
     edges = [net.connect(r[n], r[n + dim]) for n in range(dim)]
     out = net.contract_parallel(edges[0])
-    return out.get_tensor()
+    return out.tensor
 
 
 @tf.contrib.eager.defun
@@ -67,8 +67,7 @@ def scalar_product(bottom, top):
     b = net.add_node(tf.conj(bottom))
     t = net.add_node(top)
     edges = [net.connect(b[n], t[n]) for n in range(len(bottom.shape))]
-    out = net.contract_between(b, t)
-    return out.get_tensor()
+    out = net.contract_between(b, t).tensor
 
 def pad_tensor(tensor, new_shape):
     """

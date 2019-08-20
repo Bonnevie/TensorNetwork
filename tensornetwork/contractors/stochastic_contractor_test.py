@@ -58,8 +58,8 @@ class StochasticTest(tf.test.TestCase):
     net.connect(b[0], b[2])
     net = stochastic_contractor.stochastic(net, 2)
     net.check_correct()
-    res = net.get_final_node()
-    self.assertAllClose(res.get_tensor(), 6 * np.ones([4, 5]))
+    res = net.final_node()
+    self.assertAllClose(res.tensor, 6 * np.ones([4, 5]))
 
   def test_contraction_parallel_edges(self):
     net = network.TensorNetwork(backend="tensorflow")
@@ -74,8 +74,8 @@ class StochasticTest(tf.test.TestCase):
     net.connect(a[0], c[0])
     net = stochastic_contractor.stochastic(net, 2)
     net.check_correct()
-    res = net.get_final_node()
-    self.assertAllClose(res.get_tensor(), 120)
+    res = net.final_node()
+    self.assertAllClose(res.tensor, 120)
 
   def test_contraction_disconnected(self):
     net = network.TensorNetwork(backend="tensorflow")
@@ -91,8 +91,8 @@ class StochasticTest(tf.test.TestCase):
     net = stochastic_contractor.stochastic(net, 2)
     net.check_correct(check_connected=False)
     node1, node2 = edge1.node1, edge2.node1
-    self.assertAllClose(node1.get_tensor(), 6 * np.ones([4, 5]))
-    self.assertAllClose(node2.get_tensor(), 4 * np.ones([3, 3]))
+    self.assertAllClose(node1.tensor, 6 * np.ones([4, 5]))
+    self.assertAllClose(node2.tensor, 4 * np.ones([3, 3]))
 
 
 if __name__ == '__main__':

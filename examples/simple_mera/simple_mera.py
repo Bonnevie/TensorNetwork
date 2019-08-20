@@ -110,7 +110,7 @@ def binary_mera_energy(hamiltonian, state, isometry, disentangler):
 
     # FIXME: Check that this is giving us a good path!
     out.append(
-      contractors.branch(net, nbranch=2).get_final_node().get_tensor())
+      contractors.branch(net, nbranch=2).get_final_node().tensor)
 
   return 0.5 * sum(out)
 
@@ -210,7 +210,7 @@ def update_iso(hamiltonian, state, isometry, disentangler):
   net.connect(s_edges[0], s_edges[1])
   nres = net.contract_between(nu, nv, output_edge_order=output_edges)
 
-  return np.conj(nres.get_tensor())
+  return np.conj(nres.tensor)
 
 
 @jax.jit
@@ -240,7 +240,7 @@ def update_dis(hamiltonian, state, isometry, disentangler):
   net.connect(s_edges[0], s_edges[1])
   nres = net.contract_between(nu, nv, output_edge_order=output_edges)
 
-  return np.conj(nres.get_tensor())
+  return np.conj(nres.tensor)
 
 
 def shift_ham(hamiltonian, shift=None):

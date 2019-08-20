@@ -28,7 +28,7 @@ connecting "clause nodes" to "variable nodes" through "copy tensors".
 Clause nodes are tensors of shape (2, 2, 2) with 1 for every variable
 assigment that satifies the clause, and 0 for the one assigment that doesn't.
 For example, for the clause (a OR b OR NOT c), then
-clause.get_tensor()[0][0][1] == 0, and is 1 everywhere else.
+clause.tensor[0][0][1] == 0, and is 1 everywhere else.
 
 Variable Nodes are (2, 1) tensors that have [1, 1] as their concrete value.
 You can think if this node like an unnormalized superposition of the variable
@@ -61,7 +61,7 @@ def sat_tn(clauses: List[Tuple[int, int, int]]
     After full contraction, this network will be a tensor of size (2, 2, ..., 2)
     with the rank being the same as the number of variables. Each element of the
     final tensor represents whether the given assignment satisfies all of the
-    clauses. For example, if final_node.get_tensor()[0][1][1] == 1, then the
+    clauses. For example, if final_node.tensor[0][1][1] == 1, then the
     assiment (False, True, True) satisfies all clauses.
 
   Args:

@@ -79,7 +79,7 @@ def test_cnot_gate():
   net = naive(net)
   result = net.get_final_node()
   # Verify that CNOT has turned |11> into |10>.
-  np.testing.assert_allclose(result.get_tensor(), 1.0)
+  np.testing.assert_allclose(result.tensor, 1.0)
 
 
 def test_swap_gate():
@@ -102,4 +102,4 @@ def test_swap_gate():
   net = naive(net)
   result = net.get_final_node()
   # Verify that SWAP has turned |10> into |01> and kept |00> unchanged.
-  np.testing.assert_allclose(result.get_tensor(), 1.0)
+  np.testing.assert_allclose(result.tensor, 1.0)

@@ -228,8 +228,8 @@ def two_site_ascending_super_operator(operator, isometry, unitary):
     out = net.contract_between(right, out)
 
     out.reorder_edges(out_order)
-    out.axis_names = [out[n].name for n in range(len(out.get_tensor().shape))]
-    return out.get_tensor()
+    out.axis_names = [out[n].name for n in range(len(out.tensor.shape))]
+    return out.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -275,8 +275,8 @@ def two_site_descending_super_operator(rho, isometry, unitary):
     out = net.contract_between(temp, un_con)
 
     out = out.reorder_edges(out_order)
-    out.axis_names = [out[n].name for n in range(len(out.get_tensor().shape))]
-    return out.get_tensor()
+    out.axis_names = [out[n].name for n in range(len(out.tensor.shape))]
+    return out.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -352,7 +352,7 @@ def left_ascending_super_operator(hamiltonian, isometry, unitary):
     del left
 
     op.reorder_edges(out_order)
-    return op.get_tensor()
+    return op.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -429,7 +429,7 @@ def right_ascending_super_operator(hamiltonian, isometry, unitary):
     del left
 
     op.reorder_edges(out_order)
-    return op.get_tensor()
+    return op.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -508,7 +508,7 @@ def left_descending_super_operator(reduced_density, isometry, unitary):
 
     out = net.contract_between(out, un_l_con)
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -585,7 +585,7 @@ def right_descending_super_operator(reduced_density, isometry, unitary):
 
     out = net.contract_between(out, un_r_con)
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 #@tf.contrib.eager.defun(autograph=False)
@@ -672,7 +672,7 @@ def get_env_disentangler_1(hamiltonian, reduced_density, isometry, unitary):
     del op
 
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -738,7 +738,7 @@ def get_env_disentangler_2(hamiltonian, reduced_density, isometry, unitary):
     out = net.contract_between(out, iso_c)
 
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -804,7 +804,7 @@ def get_env_disentangler_3(hamiltonian, reduced_density, isometry, unitary):
     out = net.contract_between(out, iso_c)
 
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -872,7 +872,7 @@ def get_env_disentangler_4(hamiltonian, reduced_density, isometry, unitary):
     del op
 
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 def get_env_disentangler(ham, rho, isometry, unitary):
@@ -958,7 +958,7 @@ def get_env_isometry_1(hamiltonian, reduced_density, isometry, unitary):
 
     out = net.contract_between(iso_l_con, out)
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -1027,7 +1027,7 @@ def get_env_isometry_2(hamiltonian, reduced_density, isometry, unitary):
     out = net.contract_between(out, iso_l_con)
 
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -1093,7 +1093,7 @@ def get_env_isometry_3(hamiltonian, reduced_density, isometry, unitary):
     del op
 
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -1161,7 +1161,7 @@ def get_env_isometry_4(hamiltonian, reduced_density, isometry, unitary):
     out = net.contract_between(out, op)
 
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -1230,7 +1230,7 @@ def get_env_isometry_5(hamiltonian, reduced_density, isometry, unitary):
     out = net.contract_between(out, iso_r_con)
 
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 @tf.contrib.eager.defun(autograph=False)
@@ -1300,7 +1300,7 @@ def get_env_isometry_6(hamiltonian, reduced_density, isometry, unitary):
     out = net.contract_between(out, iso_r_con)
 
     out.reorder_edges(out_order)
-    return out.get_tensor()
+    return out.tensor
 
 
 def get_env_isometry(ham, rho, isometry, unitary):
@@ -1567,7 +1567,7 @@ def initialize_TFI_hams(dtype=tf.float64):
     I3 = net.add_node(eye)
     out_order = [X1[0], X2[0], I3[0], X1[1], X2[1], I3[1]]
     t1 = net.outer_product(net.outer_product(X1, X2), I3)
-    t1 = t1.reorder_edges(out_order).get_tensor()
+    t1 = t1.reorder_edges(out_order).tensor
 
     net = tn.TensorNetwork()
     Z1 = net.add_node(sZ)
@@ -1575,7 +1575,7 @@ def initialize_TFI_hams(dtype=tf.float64):
     I3 = net.add_node(eye)
     out_order = [Z1[0], I2[0], I3[0], Z1[1], I2[1], I3[1]]
     t2 = net.outer_product(net.outer_product(Z1, I2), I3)
-    t2 = t2.reorder_edges(out_order).get_tensor() / 2
+    t2 = t2.reorder_edges(out_order).tensor / 2
 
     net = tn.TensorNetwork()
     I1 = net.add_node(eye)
@@ -1583,7 +1583,7 @@ def initialize_TFI_hams(dtype=tf.float64):
     I3 = net.add_node(eye)
     out_order = [I1[0], Z2[0], I3[0], I1[1], Z2[1], I3[1]]
     t3 = net.outer_product(net.outer_product(I1, Z2), I3)
-    t3 = t3.reorder_edges(out_order).get_tensor() / 2
+    t3 = t3.reorder_edges(out_order).tensor / 2
 
     ham = t1 + t2 + t3
 
@@ -1681,7 +1681,7 @@ def optimize_binary_mera(ham_0,
                 h = net.add_node(ham[0])
                 edges = [net.connect(r[n], h[n]) for n in range(6)]
                 Energies.append(
-                    net.contract_between(r, h).get_tensor() / Z + bias)
+                    net.contract_between(r, h).tensor / Z + bias)
                 stdout.write(
                     '\r     Iteration: %i of %i: E = %.8f, err = %.16f at D = %i with %i layers'
                     % (int(k), int(numiter), float(Energies[-1]),

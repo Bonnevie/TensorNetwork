@@ -43,7 +43,7 @@ def find_parallel(edge: network_components.Edge
   for e in edge.node1.edges:
     if set(e.get_nodes()) == nodes:
       parallel_edges.add(e)
-      edge_size = list(e.node1.get_tensor().shape)[e.axis1]
+      edge_size = list(e.node1.tensor.shape)[e.axis1]
       if edge_size is not None:
         parallel_dim *= edge_size
   return parallel_edges, parallel_dim
@@ -78,7 +78,7 @@ def contract_trace_edges(
   for node in initial_node_set:
     trace_edges, flag_none, total_dim = set(), False, 1
     new_node = node
-    for edge, dim in zip(node.edges, list(node.get_tensor().shape)):
+    for edge, dim in zip(node.edges, list(node.tensor.shape)):
       if edge.node1 is edge.node2:
         if edge not in trace_edges:
           # Contract trace edge

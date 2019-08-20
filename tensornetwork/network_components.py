@@ -29,7 +29,7 @@ Tensor = Any
 TensorNetwork = Any
 
 
-class Node:
+class AbstractNode:
   """Node for the TensorNetwork graph.
 
   A Node represents a concrete tensor in a tensor network. The number of edges
@@ -46,7 +46,7 @@ class Node:
   an arbitrary dimension.
   """
 
-  def __init__(self, tensor: Tensor, name: Text, axis_names: List[Text],
+  def __init__(self, rank: int, name: Text, axis_names: List[Text],
                network: TensorNetwork) -> None:
     """Create a node for the TensorNetwork.
 
@@ -61,22 +61,23 @@ class Node:
       ValueError: If there is a repeated name in `axis_names` or if the length
         doesn't match the shape of the tensor.
     """
-    self._tensor = tensor
     self.name = name
+    self._rank = rank
     self.network = network
     self.edges = [
         Edge(edge_name, self, i) for i, edge_name in enumerate(axis_names)
     ]
+    self._ordering = list(range(rank))
+
     if axis_names is not None:
+      if len(axis_names) != rank:
+        raise ValueError("Rank and number of named axis must match." +  
+        "Rank is {} and the number of named axes is {}".format(self._rank, len(axis_names)))
       self.add_axis_names(axis_names)
     else:
       self.axis_names = None
     self.signature = -1
-
-  def get_rank(self) -> int:
-    """Return rank of tensor represented by self."""
-    return len(self.tensor.shape)
-
+ 
   def set_signature(self, signature: int) -> None:
     """Set the signature for the node.
 
@@ -97,10 +98,10 @@ class Node:
     """
     if len(axis_names) != len(set(axis_names)):
       raise ValueError("Not all axis names are unique.")
-    if len(axis_names) != len(self.tensor.shape):
+    if len(axis_names) != self.rank:
       raise ValueError("axis_names is not the same length as the tensor shape."
                        "axis_names length: {}, tensor.shape length: {}".format(
-                           len(axis_names), len(self.tensor.shape)))
+                           len(axis_names), self.rank))
     self.axis_names = axis_names[:]
 
   def add_edge(self,
@@ -118,7 +119,7 @@ class Node:
       ValueError: If the edge on axis is not dangling.
     """
     axis_num = self.get_axis_number(axis)
-    if axis_num < 0 or axis_num >= len(self.tensor.shape):
+    if axis_num < 0 or axis_num >= self.rank:
       raise ValueError("Axis must be positive and less than rank of the tensor")
     if not self.edges[axis_num].is_dangling() and not override:
       raise ValueError(
@@ -126,23 +127,17 @@ class Node:
               self, axis))
     self.edges[axis_num] = edge
 
-  def get_tensor(self):
-    return self.tensor
-
-  def set_tensor(self, tensor):
-    self.tensor = tensor
+  @property
+  def rank(self):
+    return self._rank
 
   @property
   def shape(self):
-    return self.network.backend.shape_tuple(self._tensor)
+    return NotImplemented
 
   @property
   def tensor(self) -> Tensor:
-    return self._tensor
-
-  @tensor.setter
-  def tensor(self, tensor: Tensor) -> Tensor:
-    self._tensor = tensor
+    return NotImplemented
 
   def reorder_edges(self, edge_order: List["Edge"]) -> "Node":
     """Reorder the edges for this given Node.
@@ -177,36 +172,36 @@ class Node:
       permutation.append(old_position)
       edge.update_axis(old_position, self, i, self)
     self.edges = edge_order[:]
-    self.tensor = self.network.backend.transpose(self.tensor, perm=permutation)
     if self.axis_names is not None:
       # Update axis_names:
       tmp_axis_names = []
       for i in permutation:
         tmp_axis_names.append(self.axis_names[i])
       self.axis_names = tmp_axis_names
+    self._ordering = [self._ordering[index] for index in permutation]
     return self
 
-  def reorder_axes(self, perm: List[int]) -> "Node":
+  def reorder_axes(self, permutation: List[int]) -> "Node":
     """Reorder axes of the node's tensor.
 
     This will also update all of the node's edges.
 
     Args:
-      perm: Permutation of the dimensions of the node's tensor.
+      permutation: Permutation of the dimensions of the node's tensor.
 
     Returns:
       This node post reordering.
     """
-    if set(perm) != set(range(len(self.edges))):
-      raise ValueError("A full permutation was not passed. "
-                       "Permutation passed: {}".format(perm))
-    self.tensor = self.network.backend.transpose(self.tensor, perm=perm)
+    if set(permutation) != set(range(len(self.edges))):
+      raise ValueError("A full permutation was not passed. " +
+                       "Permutation passed: {}".format(permutation))
     tmp_edges = []
-    for i, position in enumerate(perm):
+    for i, position in enumerate(permutation):
       edge = self.edges[position]
       edge.update_axis(position, self, i, self)
       tmp_edges.append(edge)
     self.edges = tmp_edges
+    self._ordering = [self._ordering[index] for index in permutation]
     return self
 
   def get_axis_number(self, axis: Union[Text, int]) -> int:
@@ -232,9 +227,9 @@ class Node:
       ValueError: if axis isn't an int or if axis is too large or small.
     """
     axis_num = self.get_axis_number(axis)
-    if axis_num < 0 or axis_num >= len(self.tensor.shape):
+    if axis_num < 0 or axis_num >= self.rank:
       raise ValueError("Axis must be positive and less than rank of the tensor")
-    return self.network.backend.shape_tuple(self.tensor)[axis_num]
+    return self.shape[axis_num]
 
   def get_edge(self, axis: Union[int, Text]) -> "Edge":
     axis_num = self.get_axis_number(axis)
@@ -286,8 +281,26 @@ class Node:
       raise ValueError("Cannot use '@' on nodes in different networks.")
     return self.network.contract_between(self, other)
 
+class Node(AbstractNode):
+    def __init__(self, tensor, name: Text, axis_names: List[Text],
+                 network: TensorNetwork) -> None:
+      rank = len(tensor.shape)
+      super().__init__(rank, name, axis_names, network)
+      self._tensor = tensor
+    
+    @property
+    def tensor(self):
+      return self.network.backend.transpose(self._tensor, perm=self._ordering)
 
-class CopyNode(Node):
+    @tensor.setter
+    def tensor(self, new_tensor):
+      self._tensor = new_tensor
+
+    @property
+    def shape(self):
+      return self.network.backend.shape_tuple(self.tensor)
+
+class CopyNode(AbstractNode):
 
   def __init__(self,
                rank: int,
@@ -296,21 +309,26 @@ class CopyNode(Node):
                axis_names: List[Text],
                network: TensorNetwork,
                dtype: Type[np.number] = np.float64) -> None:
-    # TODO: Make this computation lazy, once Node doesn't require tensor
-    # at instatiation.
-    copy_tensor = self.make_copy_tensor(rank, dimension, dtype)
-    copy_tensor = network.backend.convert_to_tensor(copy_tensor)
-    super().__init__(copy_tensor, name, axis_names, network)
-
-  @staticmethod
-  def make_copy_tensor(rank: int, dimension: int,
-                       dtype: Type[np.number]) -> Tensor:
-    shape = (dimension,) * rank
-    copy_tensor = np.zeros(shape, dtype=dtype)
-    i = np.arange(dimension)
-    copy_tensor[(i,) * rank] = 1
+    super().__init__(rank, name, axis_names, network)
+    self._dimension = dimension
+    self._dtype = dtype
+    
+  def make_copy_tensor(self) -> Tensor:
+    shape = (self._dimension,) * self.rank
+    copy_tensor = np.zeros(shape, dtype=self._dtype)
+    i = np.arange(self._dimension)
+    copy_tensor[(i,) * self.rank] = 1
     return copy_tensor
 
+  @property
+  def shape(self):
+    return (self._dimension,) * self.rank
+
+  @property 
+  def tensor(self):
+    copy_tensor = self.make_copy_tensor()
+    return self.network.backend.convert_to_tensor(copy_tensor)
+    
   def _is_my_trace(self, edge: "Edge") -> bool:
     return edge.node1 is self and edge.node2 is self
 
@@ -340,7 +358,7 @@ class CopyNode(Node):
   def _make_einsum_input_term(self, node: Node, shared_axes: Set[int],
                               next_index: int) -> Tuple[str, int]:
     indices = []
-    for axis in range(node.get_rank()):
+    for axis in range(node.rank):
       if axis in shared_axes:
         indices.append(0)
       else:
@@ -367,7 +385,7 @@ class CopyNode(Node):
     """Compute tensor corresponding to contraction of self with neighbors."""
     partners = self.get_partners()
     einsum_expression = self._make_einsum_expression(partners)
-    tensors = [partner.get_tensor() for partner in partners]
+    tensors = [partner.tensor for partner in partners]
     return self.network.backend.einsum(einsum_expression, *tensors)
 
 

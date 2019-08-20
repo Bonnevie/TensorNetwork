@@ -1725,7 +1725,7 @@ def descend_full_state_pure(isos_012):
   while nisos:
     nstate = tree.contract_between(nstate, nisos.pop())
   nstate = nstate.reorder_edges(sites)
-  return nstate.get_tensor()
+  return nstate.tensor
 
 
 def get_ham_ising(dtype, J=1.0, h=1.0):
